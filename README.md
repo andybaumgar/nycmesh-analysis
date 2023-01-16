@@ -1,5 +1,5 @@
 # nyc-mesh-analysis 
-README WIP
+## README WIP
 Python scripts for analysis of NYC Mesh network data 
 
 ## Setup
