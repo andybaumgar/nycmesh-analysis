@@ -1,5 +1,6 @@
-# nyc-mesh-analysis
-Python scripts for analysis of NYC Mesh network data
+# nyc-mesh-analysis 
+README WIP
+Python scripts for analysis of NYC Mesh network data 
 
 ## Setup
 - Open a terminal in the root repo directory.
