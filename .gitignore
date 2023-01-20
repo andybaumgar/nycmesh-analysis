@@ -127,5 +127,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-data/uisp_output_20230115.json
-data/example_LBE_data.json
+data/*
+get_uisp_data.sh
+images/*

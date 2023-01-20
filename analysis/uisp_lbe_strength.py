@@ -21,7 +21,8 @@ def nn_from_string(input_string):
     return int(re.findall("(\d{3,})", input_string)[0])
 
 data_path_object = Path(__file__).parent.parent / 'data'
-data_file_path =  str(data_path_object / 'uisp_output_20230115.json')
+data_file_path =  str(data_path_object / 'uisp_output_20230119.json')
+# data_file_path =  str(data_path_object / 'uisp_output_20230115.json')
 f = open(data_file_path)
 devices = json.load(f)
 
@@ -76,16 +77,19 @@ for device in devices:
     except KeyError:
         pass
 
+data_time = re.findall(r'\d+', str(Path(data_file_path).stem))[0]
 
 df = pd.DataFrame.from_dict(lbes)
 df_sector = pd.DataFrame.from_dict(sectors)
 
-#%%
+df.to_csv(str(data_path_object/data_time)+".csv")
 
 # lbe figure
 
-# title = f'{sector_name} LBE Signal Strength'
-title = f'Vernon Connected LBE Signal Strength'
+# title = f'{sector_name} LBE Signal Strength'1
+
+title = f'Vernon Connected LBE Signal Strength - {data_time}'
+
 px.set_mapbox_access_token(os.environ.get('MAPBOX'))
 
 fig = px.scatter_mapbox(
@@ -93,6 +97,7 @@ fig = px.scatter_mapbox(
     lat="latitude", 
     lon="longitude",   
     color="signal", 
+    range_color = [-50, -90],
     color_continuous_scale=["red", "gray", "green"], 
     zoom=11.8, 
     title=title,
@@ -112,4 +117,8 @@ fig.add_scattermapbox(
 )
 
 fig.show()
+
+image_path_object = Path(__file__).parent.parent / 'images'
+image_path =  str(image_path_object / f'{data_time}.png')
+fig.write_image(image_path, scale=6)
 # %%
