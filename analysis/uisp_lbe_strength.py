@@ -12,7 +12,7 @@ import plotly.express as px
 
 import mesh_database_client
 
-load_dotenv()
+load_dotenv() 
 spreadsheet_id = os.environ.get("SPREADSHEET_ID")
 
 database_client = mesh_database_client.DatabaseClient(spreadsheet_id=spreadsheet_id)
@@ -21,7 +21,7 @@ def nn_from_string(input_string):
     return int(re.findall("(\d{3,})", input_string)[0])
 
 data_path_object = Path(__file__).parent.parent / 'data'
-data_file_path =  str(data_path_object / 'uisp_output_20230119.json')
+data_file_path =  str(data_path_object / 'uisp_output_20230120.json')
 # data_file_path =  str(data_path_object / 'uisp_output_20230115.json')
 f = open(data_file_path)
 devices = json.load(f)
