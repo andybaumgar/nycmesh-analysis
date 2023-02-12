@@ -4,7 +4,6 @@ import json
 from pathlib import Path
 import pandas as pd
 import plotly.express as px
-import plotly.express as px
 import os
 import re
 from dotenv import load_dotenv
