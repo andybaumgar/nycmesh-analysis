@@ -15,4 +15,4 @@ Scripts to analyize NYC Mesh network data
 ## Export UISP LBE Strength
 - Run the file `analysis/uisp_lbe_strength.py`.
 - Files will be exported to the 'data' directory.
-- If you want to run the script multiple times to experiment, use the `load_uisp_data_from_file()` function which is currently commented out.  This will reduce script run time and UISP calls.
+- If you want to run the script multiple times to experiment, use the `load_uisp_data_from_file()` function which is currently commented out instead of get_uisp_devices().  This will reduce script run time and UISP calls.
