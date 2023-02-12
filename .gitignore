@@ -131,3 +131,5 @@ data/*
 get_uisp_data.sh
 images/*
 output/*
+
+!data/.gitkeep 

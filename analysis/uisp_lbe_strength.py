@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 import plotly.express as px
 import humanize
 import datetime as dt
+import subprocess
 
 import mesh_database_client
 
@@ -22,12 +23,7 @@ sector_names = ['nycmesh-5916-south1', 'nycmesh-5916-south2', 'nycmesh-5916-west
 spreadsheet_id = os.environ.get("SPREADSHEET_ID")
 database_client = mesh_database_client.DatabaseClient(spreadsheet_id=spreadsheet_id)
 
-data_path_object = Path(__file__).parent.parent / 'data'
-# data_file_path =  str(data_path_object / 'uisp_output_20230125_snow_rain.json')
-data_file_path =  str(data_path_object / 'uisp_output_20230206.json')
-# data_file_path =  str(data_path_object / 'uisp_output_20230115.json')
-f = open(data_file_path)
-devices = json.load(f)
+px.set_mapbox_access_token(os.environ.get('MAPBOX'))
 
 def nn_from_string(input_string):
     matches = re.findall("(\d{3,})", input_string)
@@ -37,12 +33,12 @@ def nn_from_string(input_string):
     return int(re.findall("(\d{3,})", input_string)[0])
 
 def human_timedelta(time):
-    # time - dt.datetime.now()
     return humanize.precisedelta(time - dt.datetime.now(dt.timezone.utc), suppress=["seconds", "minutes", "days"])
 
 def hours_delta(time):
     delta = dt.datetime.now(dt.timezone.utc) - time
     hours = delta.total_seconds()/3600
+    hours = round(hours, 1)
     return hours
 
 def nn_to_ip(nn):
@@ -64,11 +60,12 @@ def get_lbe_df(devices, sector_names, database_client):
             if nn is None:
                 continue
             location = database_client.nn_to_location(nn)
-            # last_seen = device['overview']['lastSeen']
+            last_seen = device['overview']['lastSeen']
 
             row = {
                 'latitude': location['Latitude'],
                 'longitude': location['Longitude'],
+                # UISP location not used due to duplicate errors
                 # 'latitude:':device['overview']['latitude'],
                 # 'longitude':device['overview']['longitude'],
                 'name': name,
@@ -117,29 +114,57 @@ def get_sectors_df(devices, sector_names):
     df_sector = pd.DataFrame.from_dict(sectors)
     return df_sector
 
-if __name__ == "__main__":
 
+def get_data_file_path(data_filename):
+    data_path_object = Path(__file__).parent.parent / 'data'
+    data_file_path =  str(data_path_object / data_filename)
+    return data_file_path
+
+def load_uisp_data_from_file(data_filename):
+    data_file_path =  get_data_file_path(data_filename)
+    f = open(data_file_path)
+    devices = json.load(f)
+
+    return devices
+
+def get_uisp_devices(save_filename, save_json=False):
+    command = ['nycmesh-tool', 'uisp', 'devices', 'getDevices', '--x-auth-token', os.environ.get('NYCMESH_TOOL_AUTH_TOKEN')]    
+    result = subprocess.run(command, capture_output=True, text=True).stdout
+
+    if result == '':
+        raise ValueError('Problem downloading UISP devices.')
+        
+    devices = json.loads(result)
+
+    if save_json:
+        data_file_path =  get_data_file_path(save_filename)
+        devices_json = json.dumps(devices)
+        with open(data_file_path, "w") as outfile:
+            outfile.write(devices_json)
+        print(f'UISP devices data saved to {data_file_path}')
+
+    return devices
+
+def show_lbe_stats(save_filename = None, save_csv=False, save_image=False, save_map_directory=False, show_sectors=False):
+    if save_filename is None:
+        raise ValueError('Filename required to write CSV and title Plot')
+        
     df = get_lbe_df(devices, sector_names, database_client)
 
     df_sector = get_sectors_df(devices, sector_names)
 
+    # filter LBE devices
     # df = df[df['last_seen_hours'] > 84]
     df = df[df['signal'] < -68]
 
-    # print(df['last_seen_hours'])
-    # df.shape[0]
-
+    data_file_path = get_data_file_path(save_filename)
     data_time = re.findall(r'\d+', str(Path(data_file_path).stem))[0]
 
-    df.to_csv(str(data_path_object/data_time)+".csv")
-
-    # lbe figure
-
-    # title = f'{sector_name} LBE Signal Strength'1
+    lbe_stats_csv_path = str(Path(data_file_path).parent/data_time)+".csv"
+    df.to_csv(lbe_stats_csv_path)
+    print(f"LBE stats saved to {lbe_stats_csv_path}")
 
     title = f'Connected LBE Signal Strength {data_time} (UISP signal &lt; -68dBm)'
-
-    px.set_mapbox_access_token(os.environ.get('MAPBOX'))
 
     fig = px.scatter_mapbox(
         df, 
@@ -153,36 +178,46 @@ if __name__ == "__main__":
         zoom=10, 
         title=title,
         hover_name="nn",
-        hover_data=['ap', 'last_seen_human'],
+        hover_data=['ap', 'last_seen_hours'],
         center={"lat":40.693302,"lon":-73.974665}
         )
 
     fig.update_traces(marker=dict(size=12,),
                     selector=dict(mode='markers'))
 
-    # sectors figure
+    if show_sectors:
+        fig.add_scattermapbox(
+            lat=df_sector['latitude'],
+            lon=df_sector['longitude'],
+            marker=dict(size=12,color="gold"),
+            showlegend=False
+        )
 
-    # fig.add_scattermapbox(
-    #     lat=df_sector['latitude'],
-    #     lon=df_sector['longitude'],
-    #     marker=dict(size=12,color="gold"),
-    #     showlegend=False
-    # )
+    fig.show()
 
-    # fig.show()
+    if save_map_directory:
 
-    # html_path_object = Path(__file__).parent.parent / 'output' / f'{data_time}'
-    # try:
-    #     os.mkdir(html_path_object)
-    # except Exception as e:
-    #     pass
-    # html_path =  str(html_path_object / f'index.html')
-    # fig.write_html(html_path,
-    #             full_html=False,
-    #             include_plotlyjs='cdn')
+        html_path_object = Path(__file__).parent.parent / 'output' / f'{data_time}'
+        try:
+            os.mkdir(html_path_object)
+        except Exception as e:
+            pass
+        html_path =  str(html_path_object / f'index.html')
+        fig.write_html(html_path,
+                    full_html=False,
+                    include_plotlyjs='cdn')
 
-    # image_path_object = Path(__file__).parent.parent / 'images'
-    # image_path =  str(image_path_object / f'{data_time}.png')
-    # fig.write_image(image_path, scale=6)
+    if save_image:
+        image_path_object = Path(__file__).parent.parent / 'images'
+        image_path =  str(image_path_object / f'{data_time}.png')
+        fig.write_image(image_path, scale=6)
 
-    print(df.head())
+    # print(df.head())
+
+if __name__ == "__main__":
+    data_file_name = 'uisp_output_20230212.json'
+
+    devices = get_uisp_devices(data_file_name, save_json=True)    
+    # devices = load_uisp_data_from_file(data_file_name)
+
+    show_lbe_stats(save_filename=data_file_name, save_csv=True)
