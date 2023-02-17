@@ -81,15 +81,14 @@ def get_lbe_df(devices, sector_names, database_client):
 
             lbes.append(row)
         except KeyError:
-            pass
+            continue
 
     df = pd.DataFrame.from_dict(lbes)
     df['lastSeen']= pd.to_datetime(df['lastSeen'])
-    df['last_seen_human']= df["lastSeen"].apply(human_timedelta)
+    df['last_seen_human_readable']= df["lastSeen"].apply(human_timedelta)
     df['last_seen_hours']= df["lastSeen"].apply(hours_delta)
 
     return df
-
 
 def get_sectors_df(devices, sector_names):
 
@@ -108,7 +107,7 @@ def get_sectors_df(devices, sector_names):
             sectors.append(row)
                 
         except KeyError:
-            pass
+            continue
         
     df_sector = pd.DataFrame.from_dict(sectors)
     return df_sector
@@ -126,7 +125,7 @@ def load_uisp_data_from_file(data_filename):
 
     return devices
 
-def get_uisp_devices(save_filename, save_json=False):
+def get_uisp_devices(save_filename=None):
     command = ['nycmesh-tool', 'uisp', 'devices', 'getDevices', '--x-auth-token', os.environ.get('NYCMESH_TOOL_AUTH_TOKEN')]    
     result = subprocess.run(command, capture_output=True, text=True).stdout
 
@@ -135,7 +134,7 @@ def get_uisp_devices(save_filename, save_json=False):
         
     devices = json.loads(result)
 
-    if save_json:
+    if save_filename is not None:
         data_file_path =  get_data_file_path(save_filename)
         devices_json = json.dumps(devices)
         with open(data_file_path, "w") as outfile:
@@ -216,7 +215,7 @@ def show_lbe_stats(save_filename = None, save_csv=False, save_image=False, save_
 if __name__ == "__main__":
     data_file_name = 'uisp_output_20230212.json'
 
-    devices = get_uisp_devices(data_file_name, save_json=True)    
+    devices = get_uisp_devices(save_filename=data_file_name)    
     # devices = load_uisp_data_from_file(data_file_name)
 
     show_lbe_stats(save_filename=data_file_name, save_csv=True)
