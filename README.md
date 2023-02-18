@@ -9,8 +9,6 @@ Scripts to analyize NYC Mesh network data
 - `pip install -r requirements.txt`
 - `pip install -e .`
 - Copy the the `.env-example` file and rename it to `.env`.  Fill in any relevant credentials.  Alternatively, copy paste from an existing .env.
-- Download appropriate release of [nycmesh-tool CLI](https://github.com/byxorna/nycmesh-tool/releases) for your system.
-- Rename the executable and add it to the system path so it is callable by `nycmesh-tool`.  You may need to restart your IDE / terminal.
 
 ## Export UISP LBE Strength
 - Run the file `analysis/uisp_lbe_strength.py`.

@@ -13,6 +13,7 @@ import datetime as dt
 import subprocess
 
 import mesh_database_client
+from uisp_client import get_uisp_devices
 
 load_dotenv() 
 
@@ -80,7 +81,7 @@ def get_lbe_df(devices, sector_names, database_client):
             }
 
             lbes.append(row)
-        except KeyError:
+        except (KeyError, TypeError):
             continue
 
     df = pd.DataFrame.from_dict(lbes)
@@ -122,24 +123,6 @@ def load_uisp_data_from_file(data_filename):
     data_file_path =  get_data_file_path(data_filename)
     f = open(data_file_path)
     devices = json.load(f)
-
-    return devices
-
-def get_uisp_devices(save_filename=None):
-    command = ['nycmesh-tool', 'uisp', 'devices', 'getDevices', '--x-auth-token', os.environ.get('NYCMESH_TOOL_AUTH_TOKEN')]    
-    result = subprocess.run(command, capture_output=True, text=True).stdout
-
-    if result == '':
-        raise ValueError('Problem downloading UISP devices.')
-        
-    devices = json.loads(result)
-
-    if save_filename is not None:
-        data_file_path =  get_data_file_path(save_filename)
-        devices_json = json.dumps(devices)
-        with open(data_file_path, "w") as outfile:
-            outfile.write(devices_json)
-        print(f'UISP devices data saved to {data_file_path}')
 
     return devices
 
