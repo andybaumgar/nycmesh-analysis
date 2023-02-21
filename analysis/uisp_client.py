@@ -25,11 +25,6 @@ def load_uisp_data_from_file(data_filename):
 
     return devices
 
-def get_data_file_path(data_filename):
-    data_path_object = Path(__file__).parent.parent / 'data'
-    data_file_path =  str(data_path_object / data_filename)
-    return data_file_path
-
 def get_uisp_devices(save_filename=None):
 
     response = requests.get("https://uisp.mesh.nycmesh.net/nms/api/v2.1/devices", headers={'x-auth-token': os.environ.get('NYCMESH_TOOL_AUTH_TOKEN')}, verify=False)
@@ -47,7 +42,6 @@ def get_uisp_devices(save_filename=None):
         print(f'UISP devices data saved to {data_file_path}')
 
     return devices
-
 
 def devices_to_df(devices):
     parsed_devices = []
