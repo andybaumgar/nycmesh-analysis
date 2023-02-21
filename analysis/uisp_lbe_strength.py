@@ -1,19 +1,18 @@
 #%%
 import os
-import json
 from pathlib import Path
 import pandas as pd
 import plotly.express as px
 import os
-import re
 from dotenv import load_dotenv
 import plotly.express as px
-import humanize
-import datetime as dt
-import subprocess
+import re
+
+from mesh_utils import nn_from_string
 
 import mesh_database_client
-from uisp_client import get_uisp_devices
+from uisp_client import get_uisp_devices, get_data_file_path
+from general_utils import human_timedelta, hours_delta
 
 load_dotenv() 
 
@@ -24,28 +23,6 @@ spreadsheet_id = os.environ.get("SPREADSHEET_ID")
 database_client = mesh_database_client.DatabaseClient(spreadsheet_id=spreadsheet_id)
 
 px.set_mapbox_access_token(os.environ.get('MAPBOX'))
-
-def nn_from_string(input_string):
-    matches = re.findall("(\d{3,})", input_string)
-    if not matches:
-        return None
-
-    return int(re.findall("(\d{3,})", input_string)[0])
-
-def human_timedelta(time):
-    return humanize.precisedelta(time - dt.datetime.now(dt.timezone.utc), suppress=["seconds", "minutes", "days"])
-
-def hours_delta(time):
-    delta = dt.datetime.now(dt.timezone.utc) - time
-    hours = delta.total_seconds()/3600
-    hours = round(hours, 1)
-    return hours
-
-def nn_to_ip(nn):
-    ip_fourth_octet=nn%100
-    ip_third_octet=int((nn-ip_fourth_octet)/100)
-    ip = f"10.69.{ip_third_octet}.{ip_fourth_octet}"
-    return ip
 
 def get_lbe_df(devices, sector_names, database_client):
     lbes = []
@@ -112,19 +89,6 @@ def get_sectors_df(devices, sector_names):
         
     df_sector = pd.DataFrame.from_dict(sectors)
     return df_sector
-
-
-def get_data_file_path(data_filename):
-    data_path_object = Path(__file__).parent.parent / 'data'
-    data_file_path =  str(data_path_object / data_filename)
-    return data_file_path
-
-def load_uisp_data_from_file(data_filename):
-    data_file_path =  get_data_file_path(data_filename)
-    f = open(data_file_path)
-    devices = json.load(f)
-
-    return devices
 
 def show_lbe_stats(save_filename = None, save_csv=False, save_image=False, save_map_directory=False, show_sectors=False):
     if save_filename is None:

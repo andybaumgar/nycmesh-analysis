@@ -29,22 +29,14 @@ fig = px.scatter_mapbox(
     df, 
     lat="Latitude", 
     lon="Longitude",   
-    # color="signal", 
-    # color="ap", 
-    # range_color = [-90, -50], 
-    # color_continuous_scale=["red", "gray", "green"], 
     zoom=11.8, 
     title=title,
-    # hover_name="nn",
-    # hover_data=['ap', 'last_seen_human'],
     center={"lat":40.693302,"lon":-73.974665}
     )
-
 
 fig.update_traces(marker=dict(
     size=6,
     opacity=0.5,
-    # color="gold"
     ),
     selector=dict(mode='markers'))
 
