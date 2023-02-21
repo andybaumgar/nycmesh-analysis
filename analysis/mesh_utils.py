@@ -13,8 +13,3 @@ def nn_to_ip(nn):
     ip_third_octet=int((nn-ip_fourth_octet)/100)
     ip = f"10.69.{ip_third_octet}.{ip_fourth_octet}"
     return ip
-
-
-# def get_devices_per_nn(df):
-#     nn_unique = df['nn'].unique().tolist()
-
