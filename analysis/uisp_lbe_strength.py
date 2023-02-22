@@ -12,7 +12,7 @@ from mesh_utils import nn_from_string
 
 import mesh_database_client
 from uisp_client import get_uisp_devices, get_data_file_path
-from general_utils import human_timedelta, hours_delta
+from general_utils import human_timedelta, hours_delta, save_plotly_fig_to_directory
 
 load_dotenv() 
 
@@ -141,16 +141,7 @@ def show_lbe_stats(save_filename = None, save_csv=False, save_image=False, save_
     fig.show()
 
     if save_map_directory:
-
-        html_path_object = Path(__file__).parent.parent / 'output' / f'{data_time}'
-        try:
-            os.mkdir(html_path_object)
-        except Exception as e:
-            pass
-        html_path =  str(html_path_object / f'index.html')
-        fig.write_html(html_path,
-                    full_html=False,
-                    include_plotlyjs='cdn')
+        save_plotly_fig_to_directory(fig, data_time)
 
     if save_image:
         image_path_object = Path(__file__).parent.parent / 'images'
