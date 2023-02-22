@@ -69,19 +69,10 @@ def devices_to_df(devices):
     
     df = pd.DataFrame.from_dict(parsed_devices)
     return df
-
-
+ 
 if __name__ == "__main__":
     # devices = get_uisp_devices("sxt_test.json")
     devices = load_uisp_data_from_file("sxt_test.json")
     df = devices_to_df(devices)
-    nn_count = df['nn'].value_counts()
-    # single_device_nodes = nn_count[nn_count==1]
-    # single_device_nodes = df_count[df_count[nn]==1]
-    # df_summary = df_count.value_counts()
+    print(df.head())
 
-    single_device_nns = list(nn_count[nn_count==1].index)
-    single_devices_df = df[df['nn'].isin(single_device_nns)]
-
-    # print(single_device_nns)
-    print(486 in single_device_nns)
