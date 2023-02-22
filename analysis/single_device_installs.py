@@ -57,6 +57,7 @@ def get_signup_df_with_single_install_fields(uisp_data_file=None, uisp_data_file
 
     signup_df = signup_df[signup_df['Status'].isin(['Installed'])]
     signup_df['timestamp_start'] = pd.to_datetime(signup_df['Timestamp'])
+    # create range so event lines show up on chart
     signup_df['timestamp_end'] = signup_df['timestamp_start'] + pd.Timedelta(days=5)
     signup_df['diy'] = signup_df['notes'].str.contains('diy', case=False) | signup_df['notes2'].str.contains('diy', case=False) 
 
@@ -87,8 +88,6 @@ def devices_timeline(signup_df_single_devices):
         color='diy',
         # color='Neighborhood',
         color_discrete_sequence=['rgba(255,0,0,0.5)', 'rgba(0,0,255,0.5)'],
-        # height=400, 
-        # width=1000, 
         title="Single Device Installs by Type"
     )
     fig.show()
