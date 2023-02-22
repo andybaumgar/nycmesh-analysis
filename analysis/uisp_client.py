@@ -58,7 +58,9 @@ def devices_to_df(devices):
                 # 'latitude': location['Latitude'],
                 # 'longitude': location['Longitude'],
                 'name': name,
-                'lastSeen:':device['overview']['lastSeen'],
+                'lastSeen':device['overview']['lastSeen'],
+                'model':device['identification']['model'],
+                'modelName':device['identification']['modelName'],
                 'nn': nn,
                 'ip':device['ipAddress'],
             }

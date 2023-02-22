@@ -8,6 +8,7 @@ import pandas as pd
 
 import mesh_database_client
 from uisp_client import load_uisp_data_from_file, devices_to_df, get_uisp_devices
+from general_utils import save_plotly_fig_to_directory
 
 load_dotenv()
 
@@ -20,45 +21,53 @@ def classify_single_device_install(device_name):
     device_name = device_name.lower()
     if('sxt' in device_name):
         return 'sxt'
-    elif('lbe' in device_name):
+    elif('lbe' in device_name or 'litebeam' in device_name):
         return 'lbe'
     elif('omni' in device_name):
         return 'omni'
     else:
-        return 'other'
+        # return 'other'
+        return device_name
 
 def get_signup_df_with_single_install_fields(uisp_data_file=None, uisp_data_file_cache_filename=None):
 
     if uisp_data_file:
-            devices = load_uisp_data_from_file(uisp_data_file)
+        devices = load_uisp_data_from_file(uisp_data_file)
     elif uisp_data_file_cache_filename:
         devices = get_uisp_devices(save_filename="sxt_test.json")
     else:
         devices = get_uisp_devices()
 
+    # calculate single device nodes 
     df = devices_to_df(devices)
     nn_count = df['nn'].value_counts()
     single_device_nns = list(nn_count[nn_count==1].index)
     print(486 in single_device_nns)
     single_devices_df = df[df['nn'].isin(single_device_nns)]
 
-    single_devices_df['single_install_type'] = single_devices_df['name'].apply(classify_single_device_install)
+    # classify install type
+    single_devices_df['single_install_type'] = single_devices_df['modelName'].apply(classify_single_device_install)
     print(single_devices_df)
     print(single_devices_df.shape[0])
 
+    # filter install sheet with single device nodes
     single_nns = list(single_devices_df['nn'])
     install_sheet_single_sxt = database_client.signup_df[database_client.signup_df['NN'].isin(single_nns)]
 
+    # filter only active nodes
     signup_df = install_sheet_single_sxt
-    signup_df = signup_df[signup_df['NN'] > 0]
+    # signup_df = signup_df[signup_df['NN'] > 0]
     signup_df['nn'] = signup_df['NN']
 
+    # combine spreadsheet with uisp data
     signup_df = signup_df.merge(single_devices_df, on='nn', how='inner', suffixes=('_1', '_2'))
 
-    signup_df = signup_df[signup_df['Status'].isin(['Installed'])]
-    signup_df['timestamp_start'] = pd.to_datetime(signup_df['Timestamp'])
+    # signup_df = signup_df[signup_df['Status'].isin(['Installed'])]
+
     # create range so event lines show up on chart
+    signup_df['timestamp_start'] = pd.to_datetime(signup_df['Timestamp'])
     signup_df['timestamp_end'] = signup_df['timestamp_start'] + pd.Timedelta(days=5)
+
     signup_df['diy'] = signup_df['notes'].str.contains('diy', case=False) | signup_df['notes2'].str.contains('diy', case=False) 
 
     return signup_df
@@ -91,6 +100,8 @@ def devices_timeline(signup_df_single_devices):
         title="Single Device Installs by Type"
     )
     fig.show()
+
+    save_plotly_fig_to_directory(fig, 'single_device_installs')
 
 
 if __name__ == "__main__":
