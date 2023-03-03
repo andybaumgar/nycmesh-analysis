@@ -11,7 +11,7 @@ import re
 from mesh_utils import nn_from_string
 
 import mesh_database_client
-from uisp_client import get_uisp_devices, get_data_file_path
+from uisp_client import get_uisp_devices, get_data_file_path, load_uisp_data_from_file
 from general_utils import human_timedelta, hours_delta, save_plotly_fig_to_directory
 
 load_dotenv() 
@@ -80,6 +80,7 @@ def get_sectors_df(devices, sector_names):
                 'latitude':device['location']['latitude'],
                 'longitude':device['location']['longitude'],
                 'name': device['identification']['displayName'],
+                'ipAddress': device['ipAddress'],
             }
 
             sectors.append(row)
@@ -98,9 +99,12 @@ def show_lbe_stats(save_filename = None, save_csv=False, save_image=False, save_
 
     df_sector = get_sectors_df(devices, sector_names)
 
+
+
     # filter LBE devices
     # df = df[df['last_seen_hours'] > 84]
-    df = df[df['signal'] < -68]
+    # df = df[df['signal'] < -68]
+    # df = df[df['nn'] == 4153]
 
     data_file_path = get_data_file_path(save_filename)
     data_time = re.findall(r'\d+', str(Path(data_file_path).stem))[0]
@@ -153,7 +157,7 @@ def show_lbe_stats(save_filename = None, save_csv=False, save_image=False, save_
 if __name__ == "__main__":
     data_file_name = 'uisp_output_20230212.json'
 
-    devices = get_uisp_devices(save_filename=data_file_name)    
-    # devices = load_uisp_data_from_file(data_file_name)
+    # devices = get_uisp_devices(save_filename=data_file_name)    
+    devices = load_uisp_data_from_file(data_file_name)
 
     show_lbe_stats(save_filename=data_file_name, save_csv=True)
