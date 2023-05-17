@@ -6,12 +6,15 @@ import os
 import pandas as pd
 
 import mesh_database_client
-from mesh_utils import nn_from_string, nn_to_ip
+from analysis.mesh_utils import nn_from_string, nn_to_ip
+from analysis.config import devices_endpoint, statistics_endpoint
 
 load_dotenv() 
 
 spreadsheet_id = os.environ.get("SPREADSHEET_ID")
 database_client = mesh_database_client.DatabaseClient(spreadsheet_id=spreadsheet_id)
+
+headers={'x-auth-token': os.environ.get('NYCMESH_TOOL_AUTH_TOKEN')}
 
 def get_data_file_path(data_filename):
     data_path_object = Path(__file__).parent.parent / 'data'
@@ -27,7 +30,7 @@ def load_uisp_data_from_file(data_filename):
 
 def get_uisp_devices(save_filename=None):
 
-    response = requests.get("https://uisp.mesh.nycmesh.net/nms/api/v2.1/devices", headers={'x-auth-token': os.environ.get('NYCMESH_TOOL_AUTH_TOKEN')}, verify=False)
+    response = requests.get(devices_endpoint, headers=headers, verify=False)
 
     devices = json.loads(response.content)
 
@@ -61,6 +64,7 @@ def devices_to_df(devices):
                 'lastSeen':device['overview']['lastSeen'],
                 'model':device['identification']['model'],
                 'modelName':device['identification']['modelName'],
+                'id':device['identification']['id'],
                 'nn': nn,
                 'ip':device['ipAddress'],
             }
@@ -71,10 +75,20 @@ def devices_to_df(devices):
     
     df = pd.DataFrame.from_dict(parsed_devices)
     return df
- 
+
+def get_device_history(device_id, interval):
+    endpoint = statistics_endpoint.format(device_id)
+    params = {
+    # "start": "1678598000000",
+    "interval": interval,
+    # "period":"3600000"
+    }
+    response = requests.get(endpoint, headers=headers, params=params, verify=False)
+    history = json.loads(response.content)
+    return history
+
+
 if __name__ == "__main__":
-    # devices = get_uisp_devices("sxt_test.json")
-    devices = load_uisp_data_from_file("sxt_test.json")
-    df = devices_to_df(devices)
-    print(df.head())
+    device_id = '673cb9d4-7365-4714-8129-1c38cd697988'
+    history = get_device_history(device_id)
 
