@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 import plotly.express as px
 import pandas as pd
 from datetime import date
+import pickle
+import itertools
 
 import mesh_database_client
 from analysis.uisp_client import load_uisp_data_from_file, devices_to_df, get_device_history, get_uisp_devices
@@ -26,9 +28,9 @@ def get_device_history_from_id(device_id, interval='week'):
     history = get_device_history(device_id, interval)
     error_factor = get_error_factor(history)
 
-    return error_factor
+    return error_factor, history
 
-def generate_uptime_df(save_filename = None):
+def generate_uptime_df(save_filename = None, history_filename=None):
     
     devices = get_uisp_devices()
     device_df = devices_to_df(devices, ubiquiti_fields=True)
@@ -36,19 +38,81 @@ def generate_uptime_df(save_filename = None):
     # df = device_df[device_df['name'].isin(device_names)]
     df = device_df[device_df['has60GhzRadio']==True]
 
-    df['error_factor'] = df['id'].apply(get_device_history_from_id)
+    historys = []
+    
+    for device_id, device_name in zip(df['id'], df['name']):
+        # calculate error factor
+        error_factor, history = get_device_history_from_id(device_id)
+        df.loc[df['id']==device_id, 'error_factor'] = error_factor
+
+        # format raw history data for later analysis
+        history['name'] = device_name
+        history['error_factor'] = error_factor
+        historys.append(history)
+    # df['error_factor'] = df['id'].apply(get_device_history_from_id)
     df["error_percent"] = df["error_factor"]*100
 
     if save_filename:
         df.to_csv(save_filename)
 
+    if history_filename:
+        with open(history_filename, 'wb') as pickle_file:
+            pickle.dump(historys, pickle_file)
+
     return df
 
-def graph_uptime(filename):
-    df = pd.read_csv(filename)
-    df["error_percent"] = df["error_factor"]*100
+def graph_uptime(cache_filename=None):
+    if not cache_filename:
+        df = generate_uptime_df()
+    else:
+        df = pd.read_csv(cache_filename)
     fig = px.bar(df, x='name', y='error_percent', title=f'60Hhz devices approximate down time for week ending {date.today()}')
     fig.show()
 
+def create_device_timeseries(history_data):
+    datapoints = []
+    for error in history_data['errors']:
+        datapoint = {}
+        datapoint['timestamp'] = error['x']
+        datapoint['has_error'] = error['y']
+        datapoint['name'] = history_data['name']
+
+        datapoints.append(datapoint)
+
+    return datapoints
+
+
+def graph_uptime_timeseries(pickle_filename):
+    with open(pickle_filename, 'rb') as pickle_file:
+        historys = pickle.load(pickle_file)
+
+    print(f'Loaded {len(historys)} historys')
+
+    data_point_lists = []
+    for history in historys:
+        if history['error_factor'] > 0:
+            data_point_lists.append(create_device_timeseries(history))
+
+    flat_data_point_list = list(itertools.chain.from_iterable(data_point_lists))
+
+    df = pd.DataFrame(flat_data_point_list)
+    df['date'] = pd.to_datetime(df['timestamp'], unit='ms')
+
+    df['date'] = df['date'].dt.tz_localize('utc').dt.tz_convert('US/Eastern')
+    
+    df.set_index('date')
+    hourly_df = df.groupby('name').resample('H', on='date').sum()
+    hourly_df = hourly_df.reset_index()
+
+    title = f'60Hhz devices approximate down time grouped by hour for week ending {date.today()}'
+    fig = px.bar(hourly_df, x="date", y="has_error", color='name', title=title)
+    fig.show()
+    
+
 # generate_uptime_df(save_filename="error_factor_week_has60ghz.csv")
-graph_uptime('error_factor_week_has60ghz.csv')
+# graph_uptime('error_factor_week_has60ghz.csv')
+# graph_uptime()
+
+# generate_uptime_df(history_filename='error_factor_week_has60ghz.pkl', save_filename='error_factor_week_has60ghz.csv')
+
+graph_uptime_timeseries('error_factor_week_has60ghz.pkl')

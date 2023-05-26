@@ -72,6 +72,7 @@ def devices_to_df(devices, ubiquiti_fields=False):
             if ubiquiti_fields:
                 row['frequency'] = device['overview']['frequency']
                 row['has60GhzRadio'] = device['features']['has60GhzRadio']
+                row['site_name'] = device['identification']['site']['name']
 
             parsed_devices.append(row)
         except (KeyError, TypeError):
