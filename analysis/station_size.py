@@ -15,7 +15,8 @@ df = devices_to_df(devices, ubiquiti_fields=True)
 df = df.drop_duplicates(subset='nn', keep="first")
 
 df = df['site_name'].value_counts().sort_index().reset_index()
-df=df.sort_values(by='site_name', ascending=False).head(20)
+df=df.sort_values(by='site_name', ascending=False)
+# df=df.head(20)
 df['subscriptions_$'] = df['site_name']*20
 
 # fig = px.bar(df, x='index', y="subscriptions_$", title=f"Top 20 Sites - Approximate Subscriptions as of {date.today()}")
