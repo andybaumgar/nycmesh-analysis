@@ -30,7 +30,7 @@ def get_device_history_from_id(device_id, interval='week'):
 
     return error_factor, history
 
-def generate_uptime_df(save_filename = None, history_filename=None):
+def generate_uptime_df(save_filename = None, save_history_filename=None):
     
     devices = get_uisp_devices()
     device_df = devices_to_df(devices, ubiquiti_fields=True)
@@ -55,8 +55,8 @@ def generate_uptime_df(save_filename = None, history_filename=None):
     if save_filename:
         df.to_csv(save_filename)
 
-    if history_filename:
-        with open(history_filename, 'wb') as pickle_file:
+    if save_history_filename:
+        with open(save_history_filename, 'wb') as pickle_file:
             pickle.dump(historys, pickle_file)
 
     return df
@@ -113,6 +113,6 @@ def graph_uptime_timeseries(pickle_filename):
 # graph_uptime('error_factor_week_has60ghz.csv')
 # graph_uptime()
 
-# generate_uptime_df(history_filename='error_factor_week_has60ghz.pkl', save_filename='error_factor_week_has60ghz.csv')
+generate_uptime_df(save_history_filename='error_factor_week_has60ghz.pkl', save_filename='error_factor_week_has60ghz.csv')
 
 graph_uptime_timeseries('error_factor_week_has60ghz.pkl')
