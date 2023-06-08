@@ -5,6 +5,9 @@ import dash_html_components as html
 import dash_leaflet as dl
 import dash_daq as daq
 from dash.dependencies import Output, Input
+import os
+from dotenv import load_dotenv
+load_dotenv() 
 
 MAP_ID = "map-id"
 COORDINATE_CLICK_ID = "coordinate-click-id"
@@ -18,7 +21,7 @@ app.layout = html.Div([
     
     # map component
     dl.Map(id=MAP_ID, style={'width': '1000px', 'height': '500px'}, center=[32.7, -96.8], zoom=5, children=[
-        dl.TileLayer()
+        dl.TileLayer(url=f'https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v9/tiles/{{z}}/{{x}}/{{y}}?access_token={os.environ.get("MAPBOX")}')
         ]),
     html.P("Coordinate (click on map):"),
     
