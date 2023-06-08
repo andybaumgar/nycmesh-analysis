@@ -21,7 +21,7 @@ app.layout = html.Div([
     
     # map component
     dl.Map(id=MAP_ID, style={'width': '1000px', 'height': '500px'}, center=[32.7, -96.8], zoom=5, children=[
-        dl.TileLayer(url=f'https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v9/tiles/{{z}}/{{x}}/{{y}}?access_token={os.environ.get("MAPBOX")}')
+        dl.TileLayer(url=f'https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/tiles/{{z}}/{{x}}/{{y}}?access_token={os.environ.get("MAPBOX")}')
         ]),
     html.P("Coordinate (click on map):"),
     
