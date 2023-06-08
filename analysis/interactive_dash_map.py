@@ -5,27 +5,41 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_leaflet as dl
-# import settings
-
+import dash_daq as daq
 from dash.dependencies import Output, Input
 
 MAP_ID = "map-id"
 COORDINATE_CLICK_ID = "coordinate-click-id"
 
-# app = dash.Dash(__name__, external_scripts=['https://codepen.io/chriddyp/pen/bWLwgP.css'])
+# linked stylesheet
 app = JupyterDash(__name__, external_scripts=['https://codepen.io/chriddyp/pen/bWLwgP.css'])
 
 # Create layout.
 app.layout = html.Div([
     html.H1("Example: Gettings coordinates from click"),
+    
+    # map component
     dl.Map(id=MAP_ID, style={'width': '1000px', 'height': '500px'}, center=[32.7, -96.8], zoom=5, children=[
         dl.TileLayer()
         ]),
     html.P("Coordinate (click on map):"),
-    html.Div(id=COORDINATE_CLICK_ID)
+    
+    # map output div
+    html.Div(id=COORDINATE_CLICK_ID),
+
+    # color picker component
+    daq.ColorPicker(
+        id='my-color-picker-1',
+        label='Color Picker',
+        value=dict(hex='#119DFF')
+    ),
+
+    # color picker output div
+    html.Div(id='color-picker-output-1')
 
 ])
 
+# map component event bound to input, output div bound to output 
 @app.callback(Output(COORDINATE_CLICK_ID, 'children'),
               [Input(MAP_ID, 'click_lat_lng')])
 def click_coord(e):
@@ -34,6 +48,13 @@ def click_coord(e):
     else:
         return "-"
 
+# color picker component event bound to input, output div bound to output
+@app.callback(
+    Output('color-picker-output-1', 'children'),
+    Input('my-color-picker-1', 'value')
+)
+def update_output(value):
+    return f'The selected color is {value}.'
 
 # app.run_server(host='127.0.0.1', port=8081, debug=True) 
 app.run_server(host='127.0.0.1', port=8080, debug=True, mode='inline')
