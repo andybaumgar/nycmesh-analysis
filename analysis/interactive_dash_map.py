@@ -42,6 +42,7 @@ app.layout = html.Div([
               [Input(MAP_ID, 'click_lat_lng')])
 def click_coord(e):
     if e is not None:
+        # return value is entered into output div
         return json.dumps(e)
     else:
         return "-"
@@ -52,6 +53,7 @@ def click_coord(e):
     Input('my-color-picker-1', 'value')
 )
 def update_output(value):
+    # return value is entered into output div
     return f'The selected color is {value}.'
 
 # app.run_server(host='127.0.0.1', port=8081, debug=True) 
