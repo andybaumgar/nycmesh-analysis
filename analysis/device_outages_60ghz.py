@@ -1,12 +1,8 @@
 #%%
-import plotly.express as px
-from dotenv import load_dotenv
-import plotly.express as px
 import pandas as pd
 from datetime import date
 import pickle
 import itertools
-import numpy as np
 import plotly.graph_objects as go
 
 from analysis.uisp_client import load_uisp_data_from_file, devices_to_df, get_device_history, get_uisp_devices
