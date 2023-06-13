@@ -56,7 +56,7 @@ def get_device_histories(save_filename = None, save_history_filename=None, inter
 
     return historys
 
-def add_down_factor(histories):
+def add_down_factor_to_histories(histories):
     histories_new = []
     for history in histories:
         history['down_factor_60ghz'] = get_60_ghz_down_factor(history)
@@ -82,7 +82,7 @@ def graph_uptime_timeseries(pickle_filename):
 
     print(f'Loaded {len(histories)} historys')
 
-    histories = add_down_factor(histories)
+    histories = add_down_factor_to_histories(histories)
 
     # get timeseries for all devices
     data_point_lists = []
