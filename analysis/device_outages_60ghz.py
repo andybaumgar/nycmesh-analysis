@@ -80,7 +80,7 @@ def graph_60ghz_outage_timeseries(pickle_filename):
 
     histories = add_down_factor_to_histories(histories)
 
-    # get timeseries for all devices
+    # get flat timeseries for all devices
     data_point_lists = []
     for history in histories:
         # if history['down_factor_60ghz'] is not None and history['down_factor_60ghz'] > 0 and history['down_factor_60ghz'] != 1:
@@ -104,7 +104,7 @@ def graph_60ghz_outage_timeseries(pickle_filename):
         x=time_bucket_df['date'],
         y=time_bucket_df['name'],
         z=time_bucket_df['has_error'],
-        colorscale='Reds'
+        colorscale='Reds',
     ))
     fig.show()
 
