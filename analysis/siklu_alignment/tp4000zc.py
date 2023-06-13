@@ -88,9 +88,7 @@ class Dmm:
     2400 baud 8N1
     """
 
-    bytesPerRead = 14
-
-    def __init__(self, port='/dev/ttyUSB0', retries = 3, timeout = 3.0):
+    def __init__(self, port='/dev/cu.usbserial-10', retries = 3, timeout = 3.0):
         self.ser = serial.Serial(
             port = port,
             baudrate = 2400,
@@ -99,7 +97,7 @@ class Dmm:
             bytesize = serial.EIGHTBITS,
             timeout = timeout)
         self.retries = retries # the number of times it's allowed to retry to get a valid 14 byte read
-
+        self.bytesPerRead = 14
         self._synchronize()
 
     def close(self):
@@ -112,14 +110,14 @@ class Dmm:
         # first get a set of bytes and validate it.
         # if the first doesn't validate, synch and get a new set.
         success = False
-        for readAttempt in xrange(self.retries):
+        for readAttempt in range(self.retries):
             bytes = self.ser.read(self.bytesPerRead)
             if len(bytes) != self.bytesPerRead:
                 self._synchronize()
                 continue
 
             for pos, byte in enumerate(bytes, start=1):
-                if ord(byte) // 16 != pos:
+                if ord(chr(byte)) // 16 != pos:
                     self._synchronize()
                     break
             else:
@@ -186,7 +184,7 @@ class Dmm:
         return {'flags':[], 'scale':[], 'measure':[], 'other':[]}
 
     def _readAttribByte(self, byte, bits, attribs):
-        b = ord(byte) % 16
+        b = ord(chr(byte)) % 16
         bitVal = 8
         for (attr, val) in bits:
             v = b // bitVal
@@ -197,10 +195,10 @@ class Dmm:
             bitVal //= 2
 
     def _readDigit(self, byte1, byte2):
-        b1 = ord(byte1) % 16
+        b1 = ord(chr(byte1)) % 16
         highBit = b1 // 8
         b1 = b1 % 8
-        b2 = ord(byte2) % 16
+        b2 = ord(chr(byte2)) % 16
         try:
             digit = self.digitTable[(b1,b2)]
         except:
