@@ -72,7 +72,7 @@ def create_device_timeseries_60ghz_down(history_data):
  
     return datapoints
 
-def graph_uptime_timeseries(pickle_filename):
+def graph_60ghz_outage_timeseries(pickle_filename):
     with open(pickle_filename, 'rb') as pickle_file:
         histories = pickle.load(pickle_file)
 
@@ -111,4 +111,4 @@ def graph_uptime_timeseries(pickle_filename):
 # get_device_histories(save_history_filename='error_factor_day_has60ghz.pkl', save_filename='error_factor_day_has60ghz.csv', interval='day')
 
 # uses pickle file to save data and reduce API requests
-graph_uptime_timeseries('error_factor_day_has60ghz.pkl')
+graph_60ghz_outage_timeseries('error_factor_day_has60ghz.pkl')
