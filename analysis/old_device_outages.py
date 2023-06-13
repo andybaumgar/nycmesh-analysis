@@ -8,6 +8,8 @@ import pandas as pd
 from datetime import date
 import pickle
 import itertools
+import numpy as np
+import plotly.graph_objects as go
 
 import mesh_database_client
 from analysis.uisp_client import load_uisp_data_from_file, devices_to_df, get_device_history, get_uisp_devices
@@ -24,33 +26,59 @@ def get_error_factor(history):
 
     return error_factor
 
+def get_60_ghz_interface(history):
+    for interface in history['interfaces']:
+        if interface['id'] == 'main':
+            return interface
+
+def get_60_ghz_down_factor(history):
+    try:
+    # pass
+        down_count = 0
+        timeseries = get_60_ghz_interface(history)['transmit']
+        for timestep in timeseries:
+            if timestep['y']==0:
+                down_count += 1
+
+        down_factor_60ghz = float(down_count)/float(len(timeseries))
+
+        return down_factor_60ghz
+    except:
+        return None
+
 def get_device_history_from_id(device_id, interval='week'):
     history = get_device_history(device_id, interval)
     error_factor = get_error_factor(history)
+    down_factor_60ghz = get_60_ghz_down_factor(history)
 
-    return error_factor, history
+    return error_factor, history, down_factor_60ghz
 
-def generate_uptime_df(save_filename = None, save_history_filename=None):
+def generate_uptime_df(save_filename = None, save_history_filename=None, interval='week'):
     
     devices = get_uisp_devices()
     device_df = devices_to_df(devices, ubiquiti_fields=True)
 
     # df = device_df[device_df['name'].isin(device_names)]
     df = device_df[device_df['has60GhzRadio']==True]
+    # df = df.head(3)
 
     historys = []
     
     for device_id, device_name in zip(df['id'], df['name']):
         # calculate error factor
-        error_factor, history = get_device_history_from_id(device_id)
+        error_factor, history, down_factor_60ghz = get_device_history_from_id(device_id, interval=interval)
         df.loc[df['id']==device_id, 'error_factor'] = error_factor
+        df.loc[df['id']==device_id, 'down_factor_60ghz'] = down_factor_60ghz
+        
 
         # format raw history data for later analysis
         history['name'] = device_name
         history['error_factor'] = error_factor
+        history['down_factor_60ghz'] = down_factor_60ghz
         historys.append(history)
     # df['error_factor'] = df['id'].apply(get_device_history_from_id)
     df["error_percent"] = df["error_factor"]*100
+    df["down_factor_60ghz_percent"] = df["down_factor_60ghz"]*100
 
     if save_filename:
         df.to_csv(save_filename)
@@ -69,7 +97,7 @@ def graph_uptime(cache_filename=None):
     fig = px.bar(df, x='name', y='error_percent', title=f'60Hhz devices approximate down time for week ending {date.today()}')
     fig.show()
 
-def create_device_timeseries(history_data):
+def create_device_timeseries_erros(history_data):
     datapoints = []
     for error in history_data['errors']:
         datapoint = {}
@@ -81,6 +109,18 @@ def create_device_timeseries(history_data):
 
     return datapoints
 
+def create_device_timeseries_60ghz_down(history_data):
+    datapoints = []
+    for transmit_bytes in get_60_ghz_interface(history_data)['transmit']:
+        datapoint = {}
+        datapoint['timestamp'] = transmit_bytes['x']
+        datapoint['has_error'] = transmit_bytes['y']==0
+        datapoint['name'] = history_data['name']
+ 
+        datapoints.append(datapoint)
+ 
+    return datapoints
+
 
 def graph_uptime_timeseries(pickle_filename):
     with open(pickle_filename, 'rb') as pickle_file:
@@ -90,8 +130,12 @@ def graph_uptime_timeseries(pickle_filename):
 
     data_point_lists = []
     for history in historys:
-        if history['error_factor'] > 0:
-            data_point_lists.append(create_device_timeseries(history))
+        # if history['down_factor_60ghz'] is not None and history['down_factor_60ghz'] > 0 and history['down_factor_60ghz'] != 1:
+        if history['down_factor_60ghz'] is not None and history['down_factor_60ghz'] > 0:
+        # if history['error_factor'] is not None and history['error_factor'] > 0 and history['error_factor'] != 1:
+        # if history['down_factor_60ghz'] is not None:
+            data_point_lists.append(create_device_timeseries_60ghz_down(history))
+            # data_point_lists.append(create_device_timeseries_erros(history))
 
     flat_data_point_list = list(itertools.chain.from_iterable(data_point_lists))
 
@@ -101,11 +145,19 @@ def graph_uptime_timeseries(pickle_filename):
     df['date'] = df['date'].dt.tz_localize('utc').dt.tz_convert('US/Eastern')
     
     df.set_index('date')
-    hourly_df = df.groupby('name').resample('H', on='date').sum()
-    hourly_df = hourly_df.reset_index()
+    time_bucket_df = df.groupby('name').resample('10T', on='date').sum()
+    time_bucket_df = time_bucket_df.reset_index()
 
-    title = f'60Hhz devices approximate down time grouped by hour for week ending {date.today()}'
-    fig = px.bar(hourly_df, x="date", y="has_error", color='name', title=title)
+    title = f'60Hhz devices approximate down time grouped by time bucket for time ending {date.today()}'
+    # fig = px.bar(time_bucket_df, x="date", y="has_error", color='name', title=title)
+    # fig = px.imshow(time_bucket_df, x="date", y="name", z="has_error", color_continuous_scale="YlOrRd")
+# Create the heatmap
+    fig = go.Figure(data=go.Heatmap(
+        x=time_bucket_df['date'],
+        y=time_bucket_df['name'],
+        z=time_bucket_df['has_error'],
+        colorscale='Reds'
+    ))
     fig.show()
     
 
@@ -113,6 +165,6 @@ def graph_uptime_timeseries(pickle_filename):
 # graph_uptime('error_factor_week_has60ghz.csv')
 # graph_uptime()
 
-generate_uptime_df(save_history_filename='error_factor_week_has60ghz.pkl', save_filename='error_factor_week_has60ghz.csv')
+# generate_uptime_df(save_history_filename='error_factor_week_has60ghz.pkl', save_filename='error_factor_day_has60ghz.csv', interval='day')
 
-graph_uptime_timeseries('error_factor_week_has60ghz.pkl')
+graph_uptime_timeseries('error_factor_day_has60ghz.pkl')

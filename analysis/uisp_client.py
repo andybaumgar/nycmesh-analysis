@@ -82,6 +82,8 @@ def devices_to_df(devices, ubiquiti_fields=False):
     return df
 
 def get_device_history(device_id, interval):
+    # Available interval values : hour, fourhours, day, week, month, quarter, year, range
+    
     endpoint = statistics_endpoint.format(device_id)
     params = {
     # "start": "1678598000000",
