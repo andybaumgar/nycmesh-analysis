@@ -13,11 +13,12 @@ influx_client = InfluxDBClient('localhost', 8086, 'admin', 'admin', 'siklu')
 
 def get_voltage():
     val = dmm.read()
-    print(val)
-    return val
+
+    print(val.numericVal)
+    return val.numericVal
 
 
-def create_influx_post(self, measurements):
+def create_influx_post(measurements):
     json_body = []
     current_time = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
 
@@ -34,15 +35,14 @@ def create_influx_post(self, measurements):
 
     return json_body
 
-def record_data(self):  
-
-    data = {"voltage": get_voltage()}
-    
-    post = self.create_influx_post(data)
-    influx_client.write_points(post)
-    
-    self.send_response(200)
-    self.end_headers()
+def record_data():  
+    try:
+        data = {"voltage": abs(get_voltage())}
+        
+        post = create_influx_post(data)
+        influx_client.write_points(post)
+    except:
+        pass
 
 while(True):
     sleep(.1)
