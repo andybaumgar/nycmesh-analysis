@@ -16,3 +16,6 @@ This project uses a [TP4000zc multimeter](https://www.amazon.com/gp/product/B000
 
 ## Troubbleshooting 
 - if the serial port is incorrect you may have to run `read_serial_ports_mac.py` to determine the correct port for your system
+
+## References
+- logger source: https://github.com/Xuth/tp4000_dmm (had to be modified to work with Python 3)
