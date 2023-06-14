@@ -1,3 +1,6 @@
+## Note
+- Only tested on Mac
+
 ## Setup
 
 - cd into `analysis/siklu_alignment`
@@ -7,3 +10,6 @@
 - `pip install influxdb`
 - run `tp400zc_influx_data_logger.py`
 - in Grafana create a dashboard and a panel with the voltage metric
+
+## Troubbleshooting 
+- if the serial port is incorrect you may have to run `read_serial_ports_mac.py` to determine the correct port for your system
