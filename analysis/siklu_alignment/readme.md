@@ -1,6 +1,9 @@
 ## Note
 - Only tested on Mac
 
+## Hardware
+This project uses a [TP4000zc multimeter](https://www.amazon.com/gp/product/B000OPDFLM/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1).
+
 ## Setup
 
 - cd into `analysis/siklu_alignment`
