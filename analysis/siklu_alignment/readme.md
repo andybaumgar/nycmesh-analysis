@@ -1,7 +1,6 @@
-## Grafana setup
+## Influx / Grafana setup
 
-docker run -d --name=grafana -p 3000:3000 grafana/grafana:8.5.0
-
-## Influx setup
-
-docker compose up -d --force-recreate --build
+- cd into `analysis/siklu_alignment`
+- start Docker Desktop
+- `docker compose up -d --force-recreate --build`
+- in Grafana to setup datasource use host url: `http://influxdb:8086`
