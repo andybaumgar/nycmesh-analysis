@@ -34,15 +34,12 @@ def create_influx_post(self, measurements):
 
     return json_body
 
-def record_data(self):  
+def record_data():  
 
     data = {"voltage": get_voltage()}
     
-    post = self.create_influx_post(data)
+    post = create_influx_post(data)
     influx_client.write_points(post)
-    
-    self.send_response(200)
-    self.end_headers()
 
 while(True):
     sleep(.1)

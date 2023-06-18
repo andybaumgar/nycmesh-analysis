@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 import os
 import pandas as pd
+import time
 
 import mesh_database_client
 from analysis.mesh_utils import nn_from_string, nn_to_ip
@@ -85,6 +86,7 @@ def get_device_history(device_id, interval):
     # Available interval values : hour, fourhours, day, week, month, quarter, year, range
     
     endpoint = statistics_endpoint.format(device_id)
+    
     params = {
     # "start": "1678598000000",
     "interval": interval,

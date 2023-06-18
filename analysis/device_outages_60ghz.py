@@ -4,6 +4,7 @@ from datetime import date
 import pickle
 import itertools
 import plotly.graph_objects as go
+from plotly.colors import n_colors
 
 from analysis.uisp_client import load_uisp_data_from_file, devices_to_df, get_device_history, get_uisp_devices
 
@@ -93,22 +94,27 @@ def graph_60ghz_outage_timeseries(pickle_filename):
 
     df['date'] = pd.to_datetime(df['timestamp'], unit='ms')
     df['date'] = df['date'].dt.tz_localize('utc').dt.tz_convert('US/Eastern')
+    
     df.set_index('date')
 
-    time_bucket_df = df.groupby('name').resample('10T', on='date').sum()
-    time_bucket_df = time_bucket_df.reset_index()
+    df = df.groupby('name').resample('6T', on='date').sum()
+    df = df.reset_index()
 
     title = f'60Hhz devices approximate down time grouped by time bucket for time ending {date.today()}'
 
+    colorscale = n_colors('rgb(255, 255, 255)', 'rgb(222, 73, 73)', 2, colortype = 'rgb')
+
     fig = go.Figure(data=go.Heatmap(
-        x=time_bucket_df['date'],
-        y=time_bucket_df['name'],
-        z=time_bucket_df['has_error'],
-        colorscale='Reds',
+        x=df['date'],
+        y=df['name'],
+        z=df['has_error'],
+        colorscale=colorscale,
+        showscale=False
     ))
+
     fig.show()
 
-# get_device_histories(save_history_filename='error_factor_day_has60ghz.pkl', save_filename='error_factor_day_has60ghz.csv', interval='day')
+get_device_histories(save_history_filename='error_factor_day_has60ghz.pkl', save_filename='error_factor_day_has60ghz.csv', interval='day')
 
 # uses pickle file to save data and reduce API requests
 graph_60ghz_outage_timeseries('error_factor_day_has60ghz.pkl')
