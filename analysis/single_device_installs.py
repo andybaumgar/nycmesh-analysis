@@ -42,13 +42,13 @@ def get_signup_df_with_single_install_fields(uisp_data_file=None, uisp_data_file
     df = devices_to_df(devices)
     nn_count = df['nn'].value_counts()
     single_device_nns = list(nn_count[nn_count==1].index)
-    print(486 in single_device_nns)
+    # print(486 in single_device_nns)
     single_devices_df = df[df['nn'].isin(single_device_nns)]
 
     # classify install type
     single_devices_df['single_install_type'] = single_devices_df['modelName'].apply(classify_single_device_install)
-    print(single_devices_df)
-    print(single_devices_df.shape[0])
+    # print(single_devices_df)
+    # print(single_devices_df.shape[0])
 
     # filter install sheet with single device nodes
     single_nns = list(single_devices_df['nn'])
@@ -105,6 +105,8 @@ def devices_timeline(signup_df_single_devices):
 
 
 if __name__ == "__main__":
-    single_install_df = get_signup_df_with_single_install_fields(uisp_data_file='sxt_test.json')
+    single_install_df = get_signup_df_with_single_install_fields()
+    lbe_only_df = single_install_df[single_install_df['single_install_type'] == 'lbe']
+    lbe_only_df.to_csv('lbe_only.csv')
     # map_devices(single_install_df)
-    devices_timeline(single_install_df)
+    # devices_timeline(single_install_df)
