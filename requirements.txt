@@ -3,3 +3,4 @@ plotly
 python-dotenv
 mesh-database-client
 requests
+influxdb

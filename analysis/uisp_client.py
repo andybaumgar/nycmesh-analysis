@@ -9,6 +9,7 @@ import time
 import mesh_database_client
 from analysis.mesh_utils import nn_from_string, nn_to_ip
 from analysis.config import devices_endpoint, statistics_endpoint
+from utils import get_data_file_path
 
 load_dotenv() 
 
@@ -16,11 +17,6 @@ spreadsheet_id = os.environ.get("SPREADSHEET_ID")
 database_client = mesh_database_client.DatabaseClient(spreadsheet_id=spreadsheet_id)
 
 headers={'x-auth-token': os.environ.get('NYCMESH_TOOL_AUTH_TOKEN')}
-
-def get_data_file_path(data_filename):
-    data_path_object = Path(__file__).parent.parent / 'data'
-    data_file_path =  str(data_path_object / data_filename)
-    return data_file_path
 
 def load_uisp_data_from_file(data_filename):
     data_file_path =  get_data_file_path(data_filename)
