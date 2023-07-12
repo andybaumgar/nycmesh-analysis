@@ -15,7 +15,7 @@ def hub_to_emails(hub_nn, paste_format=True):
     emails = df['Email'].tolist()
 
     if paste_format:
-        emails = " ".join(emails)
+        return " ".join(emails)
 
     return emails
 
