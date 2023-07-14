@@ -93,6 +93,14 @@ def get_device_history(device_id, interval):
     return history
 
 
+def merge_uisp_df_to_signup_df(devices_df, signup_df):
+
+    signup_df['nn'] = signup_df['NN']
+
+    signup_df = signup_df.merge(devices_df, on='nn', how='inner', suffixes=('_1', '_2'))
+
+    return signup_df
+
 if __name__ == "__main__":
     device_id = '673cb9d4-7365-4714-8129-1c38cd697988'
     history = get_device_history(device_id)
