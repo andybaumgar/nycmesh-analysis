@@ -114,7 +114,7 @@ def select_node(
     # else:
     #     downstream_nns_emails_output = ""
 
-    downstream_nns_emails_output = downstream_nns_emails
+    downstream_nns_emails_output = ", ".join(downstream_nns_emails)
 
     # change downstream node state
     new_df.loc[new_df["NN"].isin(downstream_nns), "node_state"] = "downstream"
