@@ -110,7 +110,7 @@ def select_node(
 
     downstream_nns_emails = nns_to_emails(downstream_nns, database_client, paste_format=False)
     if password == os.environ.get("MEMBER_EMAIL_PASSWORD"):
-        downstream_nns_emails_output = ''
+        downstream_nns_emails_output = downstream_nns_emails
     else:
         downstream_nns_emails_output = ""
 
