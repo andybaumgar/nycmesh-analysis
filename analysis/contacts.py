@@ -2,7 +2,6 @@ from dotenv import load_dotenv
 import os
 
 import mesh_database_client
-from mesh_utils import get_downstream_nns
 
 def nns_to_emails(nns, database_client, paste_format=True):
     df = database_client.signup_df.copy()

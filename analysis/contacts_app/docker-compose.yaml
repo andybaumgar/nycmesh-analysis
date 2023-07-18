@@ -1,0 +1,10 @@
+version: '3.7'
+services:
+  hub-contact-finder:
+    build: 
+      context: ../../
+      dockerfile: ./analysis/contacts_app/Dockerfile
+    container_name: hub-contact-finder
+    restart: unless-stopped
+    ports:
+      - 5000:80
