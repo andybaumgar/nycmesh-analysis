@@ -10,7 +10,7 @@ def color_marker(series):
         elif state == "downstream":
             output_colors.append("DodgerBlue")
         else:
-            output_colors.append("black")
+            output_colors.append("gray")
     return output_colors
 
 def generate_mapbox_scatter_data(df, circle_diameter, color=None):
