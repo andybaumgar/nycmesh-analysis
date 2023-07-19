@@ -71,6 +71,7 @@ def create_layout(df, links_df):
                                 ],
                                 style={"padding-bottom": "1em"},
                             ),
+                            dbc.Alert("Note: This tool currently works best for small to mid-sized hubs due to its simplified graph algorithm.", color="secondary"),
                         ],
                         md=5,
                     ),
