@@ -15,7 +15,7 @@ def create_layout(df, links_df):
                             dbc.NavItem(
                                 dbc.NavLink(
                                     "GitHub",
-                                    href="https://github.com/andybaumgar/nycmesh-analysis/blob/main/analysis/contacts_app.py",
+                                    href="https://github.com/andybaumgar/nycmesh-analysis/tree/main/analysis/contacts_app",
                                 )
                             ),
                         ],
