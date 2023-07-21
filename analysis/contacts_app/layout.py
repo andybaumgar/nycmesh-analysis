@@ -1,8 +1,9 @@
-
 import dash_core_components as dcc
+from dash import Input, Output, html
 import dash_bootstrap_components as dbc
 
 from analysis.contacts_app.map import create_map_figure
+
 
 def create_layout(df, links_df):
     layout = dbc.Container(
@@ -35,7 +36,9 @@ def create_layout(df, links_df):
                                     dbc.InputGroupText("NN Input"),
                                     dbc.Input(id="nn-input", type="number"),
                                     dbc.Button(
-                                        "Select node", id="select-node-button", n_clicks=0
+                                        "Select node",
+                                        id="select-node-button",
+                                        n_clicks=0,
                                     ),
                                     dbc.Button(
                                         "Clear node",
@@ -56,10 +59,14 @@ def create_layout(df, links_df):
                                 ],
                                 style={"padding-bottom": "1em"},
                             ),
-                            dcc.Store(id="install-sheet-df", data=df.to_dict("records")),
+                            dcc.Store(
+                                id="install-sheet-df", data=df.to_dict("records")
+                            ),
                             dbc.InputGroup(
                                 [
-                                    dbc.InputGroupText("Node emails", id="node-email-output-label"),
+                                    dbc.InputGroupText(
+                                        "Node emails", id="node-email-output-label"
+                                    ),
                                     dbc.Textarea(id="node-email-output"),
                                 ],
                                 style={"padding-bottom": "1em"},
@@ -71,7 +78,17 @@ def create_layout(df, links_df):
                                 ],
                                 style={"padding-bottom": "1em"},
                             ),
-                            dbc.Alert("Note: This tool currently works best for small to mid-sized hubs due to its simplified graph algorithm.", color="secondary"),
+                            dbc.Alert(
+                                "Note: This tool currently works best for small to mid-sized hubs due to its simplified graph algorithm.",
+                                color="secondary",
+                            ),
+                            dbc.Row(
+                                dbc.Spinner(
+                                    html.Div(id="loading-output"),
+                                    color="primary",
+                                ),
+                                style={"padding-top": "1em"},
+                            ),
                         ],
                         md=5,
                     ),

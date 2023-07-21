@@ -22,10 +22,12 @@ from analysis.contacts_app.map import color_marker
 server = Flask(__name__)
 app = dash.Dash(server=server, external_stylesheets=[dbc.themes.BOOTSTRAP])
 # application = app.server
-app.title = 'Hub Contact Finder'
+app.title = "Hub Contact Finder"
 
 spreadsheet_id = os.environ.get("SPREADSHEET_ID")
-database_client = mesh_database_client.DatabaseClient(spreadsheet_id=spreadsheet_id, include_active = True)
+database_client = mesh_database_client.DatabaseClient(
+    spreadsheet_id=spreadsheet_id, include_active=True
+)
 links_df = get_links_df_with_locations(database_client)
 links_df = links_df[links_df["status"] != "vpn"]
 df = database_client.active_node_df
@@ -37,6 +39,7 @@ shortest_paths, active_nns = create_shortest_path_graph(database_client)
 
 app.layout = create_layout(df, links_df)
 
+
 @app.callback(
     [
         Output("nn-input", "value", allow_duplicate=True),
@@ -46,6 +49,7 @@ app.layout = create_layout(df, links_df)
         Output("node-output", "value", allow_duplicate=True),
         Output("node-output-label", "children", allow_duplicate=True),
         Output("node-email-output-label", "children", allow_duplicate=True),
+        Output("loading-output", "children", allow_duplicate=True),
     ],
     [Input("clear-node", "n_clicks")],
     [State("map", "figure"), State("install-sheet-df", "data")],
@@ -55,7 +59,7 @@ def deselect_node(n_clicks, current_figure, df_data):
     new_figure = current_figure.copy()
     new_figure["data"][-1]["marker"]["color"] = color_marker(df["node_state"])
 
-    return None, new_figure, df.to_dict("records"), "", "", 'Nodes', 'Node emails'
+    return None, new_figure, df.to_dict("records"), "", "", "Nodes", "Node emails", ""
 
 
 @app.callback(
@@ -67,6 +71,7 @@ def deselect_node(n_clicks, current_figure, df_data):
         Output("node-output", "value", allow_duplicate=True),
         Output("node-output-label", "children", allow_duplicate=True),
         Output("node-email-output-label", "children", allow_duplicate=True),
+        Output("loading-output", "children", allow_duplicate=True),
     ],
     [Input("map", "clickData"), Input("select-node-button", "n_clicks")],
     [
@@ -108,7 +113,9 @@ def select_node(
     )
     downstream_nns_string = ", ".join([str(nn) for nn in downstream_nns])
 
-    downstream_nns_emails = nns_to_emails(downstream_nns, database_client, paste_format=False)
+    downstream_nns_emails = nns_to_emails(
+        downstream_nns, database_client, paste_format=False
+    )
     if password == os.environ.get("MEMBER_EMAIL_PASSWORD"):
         downstream_nns_emails_output = downstream_nns_emails
     else:
@@ -120,13 +127,13 @@ def select_node(
     # update map
     new_figure["data"][-1]["marker"]["color"] = color_marker(new_df["node_state"])
 
-    node_label_text = 'Nodes'
+    node_label_text = "Nodes"
     if downstream_nns:
-        node_label_text = f'Nodes ({len(downstream_nns)})'
+        node_label_text = f"Nodes ({len(downstream_nns)})"
 
-    node_emails_label_text = 'Node emails'
+    node_emails_label_text = "Node emails"
     if downstream_nns_emails:
-        node_emails_label_text = f'Node emails ({len(downstream_nns_emails)})'
+        node_emails_label_text = f"Node emails ({len(downstream_nns_emails)})"
 
     return (
         row["NN"],
@@ -135,7 +142,8 @@ def select_node(
         downstream_nns_emails_output,
         downstream_nns_string,
         node_label_text,
-        node_emails_label_text
+        node_emails_label_text,
+        "",
     )
 
 
