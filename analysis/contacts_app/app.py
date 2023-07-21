@@ -148,5 +148,7 @@ def select_node(
 
 
 if __name__ == "__main__":
-    app.run_server(debug=True)
-    # app.run_server(debug=False)
+    if os.environ.get("ENV") == "development":
+        app.run_server(debug=True)
+    else:
+        app.run_server(debug=False)
