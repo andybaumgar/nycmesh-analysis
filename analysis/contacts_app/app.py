@@ -1,9 +1,7 @@
 import dash
-import dash_core_components as dcc
 from dash.dependencies import Input, Output, State
 import os
 import pandas as pd
-import plotly.express as px
 import dash_bootstrap_components as dbc
 from flask import Flask
 
@@ -13,7 +11,7 @@ load_dotenv()
 
 import mesh_database_client
 from analysis.mesh_utils import get_links_df_with_locations
-from analysis.node_graph import create_shortest_path_graph, get_downstream_nns
+from analysis.node_graph import NYCMeshGraph
 from analysis.contacts import nns_to_emails
 
 from analysis.contacts_app.layout import create_layout
@@ -35,7 +33,10 @@ df["node_state"] = "deselected"
 
 empty_node_text = "No node selected"
 
-shortest_paths, active_nns = create_shortest_path_graph(database_client)
+# shortest_paths, active_nns = create_shortest_path_graph(database_client)
+# graph = NYCMeshGraph(links_df)
+graph = NYCMeshGraph(links_df)
+
 
 app.layout = create_layout(df, links_df)
 
@@ -108,9 +109,8 @@ def select_node(
     row["node_state"] = "selected"
     new_df.iloc[selected_index] = row
 
-    downstream_nns = get_downstream_nns(
-        selected_nn, database_client, shortest_paths, active_nns
-    )
+    downstream_nns = graph.get_dependent_nodes(selected_nn)
+
     downstream_nns_string = ", ".join([str(nn) for nn in downstream_nns])
 
     downstream_nns_emails = nns_to_emails(

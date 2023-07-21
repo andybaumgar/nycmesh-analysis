@@ -1,53 +1,68 @@
 import mesh_database_client
-from analysis.utils import nn_to_latitude, nn_to_longitude
 import networkx as nx
 import os
 
-def create_shortest_path_graph(database_client):
-    # TODO: look through all supernodes
-    # supernode_nns = [1933, 227, 713]
-    supernode_nn = 1933
 
-    active_nodes = database_client.active_node_df
-     
-    links_df = database_client.active_link_df
-     
-    graph = nx.from_pandas_edgelist(links_df, 'to', 'from')
+class NYCMeshGraph:
+    def __init__(self, links_df):
+        links_df["weight"] = 1
+        self.links_df = links_df
 
-    used_active_nns = []
-    shortest_paths = []
-    for nn in active_nodes['NN']:
-        try:
-            path = list(nx.shortest_path(graph, nn, supernode_nn))
-            shortest_paths.append(path)
-            used_active_nns.append(nn)
-        except Exception as e:
-            pass
-    
-    return shortest_paths, used_active_nns
+        self.graph = nx.MultiDiGraph()
+        self.exit_nodes = [10, 713]
 
-def get_downstream_nns(hub_nn:int, database_client, shortest_paths, active_nns):
+        self.update_graph()
 
-    downstream_nns = []
-    for nn, path in zip(active_nns, shortest_paths):
-        if hub_nn in path and hub_nn != nn:
-            downstream_nns.append(nn)
+    def update_graph(self):
+        self.graph = nx.from_pandas_edgelist(self.links_df, "to", "from", ["weight"])
 
-    downstream_nns = list(set(downstream_nns))
+        # Get only the largest connected component
+        largest_connected = max(
+            nx.connected_components(self.graph.to_undirected()), key=len
+        )
+        self.graph = self.graph.subgraph(largest_connected).copy()
 
-    return downstream_nns
+    def get_downstream_nodes(self, nn):
+        distances, paths = nx.algorithms.multi_source_dijkstra(
+            self.graph, self.exit_nodes
+        )
+        egress_forest = nx.DiGraph(
+            (node_id, egress_path[-2])
+            for node_id, egress_path in paths.items()
+            if len(egress_path) > 1
+        )
+
+        return nx.ancestors(egress_forest, nn)
+
+    def get_dependent_nodes(self, nn):
+        downstream_nodes = self.get_downstream_nodes(nn)
+
+        graph_during_outage = self.graph.copy()
+        graph_during_outage.remove_node(nn)
+
+        fully_dependent_nodes = set({})
+        for node_id in downstream_nodes:
+            component = nx.node_connected_component(
+                graph_during_outage.to_undirected(), node_id
+            )
+            if all(n not in component for n in self.exit_nodes):
+                fully_dependent_nodes.add(node_id)
+
+        # partially_dependent_nodes = downstream_nodes - fully_dependent_nodes
+
+        # alternate_paths = nx.algorithms.multi_source_dijkstra_path(
+        #     graph_during_outage, self.exit_nodes
+        # )
+        return list(fully_dependent_nodes)
 
 
 if __name__ == "__main__":
- 
     spreadsheet_id = os.environ.get("SPREADSHEET_ID")
-    database_client = mesh_database_client.DatabaseClient(spreadsheet_id=spreadsheet_id, include_active = True)
+    database_client = mesh_database_client.DatabaseClient(
+        spreadsheet_id=spreadsheet_id, include_active=True
+    )
 
-    shortest_paths, active_nns = create_shortest_path_graph(database_client)
-
-    # nns = get_downstream_nns(2274, database_client, shortest_paths, active_nns)
-    nns = get_downstream_nns(154, database_client, shortest_paths, active_nns)
-    print(nns)
-
-    # links_df = get_links_df_with_locations(database_client)
-    # print(links_df.head())
+    links_df = database_client.active_link_df
+    graph = NYCMeshGraph(links_df)
+    dependent_nns = graph.get_dependent_nodes(1971)
+    print(dependent_nns)
