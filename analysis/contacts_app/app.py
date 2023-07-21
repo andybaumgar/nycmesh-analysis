@@ -27,7 +27,7 @@ database_client = mesh_database_client.DatabaseClient(
     spreadsheet_id=spreadsheet_id, include_active=True
 )
 links_df = get_links_df_with_locations(database_client)
-links_df = links_df[links_df["status"] != "vpn"]
+
 df = database_client.active_node_df
 df["node_state"] = "deselected"
 
