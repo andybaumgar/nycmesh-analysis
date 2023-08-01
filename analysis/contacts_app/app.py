@@ -16,6 +16,7 @@ from analysis.contacts import nns_to_emails
 
 from analysis.contacts_app.layout import create_layout
 from analysis.contacts_app.map import color_marker
+from analysis.contacts_app.database_utils import create_map_state_df
 
 server = Flask(__name__)
 app = dash.Dash(server=server, external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -28,7 +29,8 @@ database_client = mesh_database_client.DatabaseClient(
 )
 links_df = get_links_df_with_locations(database_client)
 
-df = database_client.active_node_df
+df_emails = database_client.active_node_df
+df = create_map_state_df(df_emails)
 df["node_state"] = "deselected"
 
 empty_node_text = "No node selected"

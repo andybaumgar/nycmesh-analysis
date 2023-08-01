@@ -27,24 +27,4 @@ def nns_from_string(input_string):
     else:
         matches = [int(match) for match in matches]
         return matches[0], matches[1]
-    
-def nn_to_latitude(nn, database_client):
-    try:
-        return database_client.nn_to_location(nn)['Latitude']
-    except:
-        return None
-
-def nn_to_longitude(nn, database_client):
-    try:
-        return database_client.nn_to_location(nn)['Longitude']
-    except:
-        return None
-
-def get_link_distance(nn_1, nn_2, database_client):
-    location_1 = database_client.nn_to_location(nn_1)
-    location_2 = database_client.nn_to_location(nn_2)
-
-    distance_miles = get_distance_miles(location_1, location_2)
-
-    return distance_miles
 
