@@ -1,22 +1,22 @@
-import dash
-from dash.dependencies import Input, Output, State
 import os
-import pandas as pd
-import dash_bootstrap_components as dbc
-from flask import Flask
 
+import dash
+import dash_bootstrap_components as dbc
+import pandas as pd
+from dash.dependencies import Input, Output, State
 from dotenv import load_dotenv
+from flask import Flask
 
 load_dotenv()
 
 import mesh_database_client
-from analysis.mesh_utils import get_links_df_with_locations
-from analysis.node_graph import NYCMeshGraph
-from analysis.contacts import nns_to_emails
 
+from analysis.contacts import nns_to_emails
+from analysis.contacts_app.database_utils import create_map_state_df
 from analysis.contacts_app.layout import create_layout
 from analysis.contacts_app.map import color_marker
-from analysis.contacts_app.database_utils import create_map_state_df
+from analysis.mesh_utils import get_links_df_with_locations
+from analysis.node_graph import NYCMeshGraph
 
 server = Flask(__name__)
 app = dash.Dash(server=server, external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -116,7 +116,7 @@ def select_node(
     downstream_nns_string = ", ".join([str(nn) for nn in downstream_nns])
 
     downstream_nns_emails = nns_to_emails(
-        downstream_nns, database_client, paste_format=False
+        (downstream_nns + [selected_nn]), database_client, paste_format=False
     )
     if password == os.environ.get("MEMBER_EMAIL_PASSWORD"):
         downstream_nns_emails_output = downstream_nns_emails
