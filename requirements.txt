@@ -22,3 +22,4 @@ googlemaps
 Flask
 Flask-Compress
 geopandas
+pickle5
