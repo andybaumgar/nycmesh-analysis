@@ -138,3 +138,4 @@ error_factor_week_has60ghz.csv
 error_factor_week_has60ghz.pkl
 
 analysis/siklu_alignment/influx/influxdb_data
+.DS_Store
