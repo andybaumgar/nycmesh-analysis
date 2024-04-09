@@ -4,6 +4,7 @@ from pathlib import Path
 import pandas as pd
 import plotly.express as px
 import plotly.express as px
+import plotly.graph_objects as go
 import os
 from dotenv import load_dotenv
 import plotly.express as px
@@ -39,3 +40,56 @@ fig.update_traces(marker=dict(
 
 fig.show()
 # %%
+
+
+# Create a base Mapbox figure
+fig = go.Figure(go.Scattermapbox())
+
+# Add nodes to the figure
+fig.add_trace(go.Scattermapbox(
+    mode='markers',
+    lon=node_df['longitude'],
+    lat=node_df['latitude'],
+    marker=dict(
+        size=10,
+        color='blue',
+    ),
+    name='Nodes'
+))
+
+# Add original kiosks to the figure
+fig.add_trace(go.Scattermapbox(
+    mode='markers',
+    lon=kiosk_df['longitude'],
+    lat=kiosk_df['latitude'],
+    marker=dict(
+        size=10,
+        color='brown',
+    ),
+    name='Original Kiosks'
+))
+
+# Add found kiosks within 50m of a node to the figure
+fig.add_trace(go.Scattermapbox(
+    mode='markers',
+    lon=kiosks_within_50m['longitude'],
+    lat=kiosks_within_50m['latitude'],
+    marker=dict(
+        size=10,
+        color='yellow',
+    ),
+    name='Kiosks within 50m of a Node'
+))
+
+# Update layout to set Mapbox parameters
+fig.update_layout(
+    hovermode='closest',
+    mapbox=dict(
+        style="carto-positron",
+        center=dict(lon=node_df['longitude'].mean(), lat=node_df['latitude'].mean()),
+        zoom=10
+    )
+)
+
+# Show the figure
+fig.show()
