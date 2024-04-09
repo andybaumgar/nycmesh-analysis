@@ -173,8 +173,8 @@ def plot_outage_distance_correlation(df):
     print(df)
 
 
-# df, output_path = get_mm_data_from_database_and_save(num_days=30)
-# print(f"Saved data to {output_path}")
+df, output_path = get_mm_data_from_database_and_save(num_days=20)
+print(f"Saved data to {output_path}")
 
-df = get_mm_data_from_file("60ghz_devices_30d.csv")
+df = get_mm_data_from_file("60ghz_devices_20d.csv")
 plot_outage_distance_correlation(df)
