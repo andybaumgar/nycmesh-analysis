@@ -2,7 +2,6 @@
 
 import requests
 import pandas as pd
-from config import meshdb_endpoint
 from pathlib import Path
 import geopandas as gpd
 from shapely.geometry import Point
@@ -12,7 +11,7 @@ import plotly.graph_objects as go
 # 
 
 # get data folder in parent of current folder
-data_folder = Path(__file__).parent.parent/'data'
+data_folder = Path(__file__).parent.parent/'data_small'
 kiosk_df = pd.read_json(str(data_folder/'kiosks.json'))
 node_df = pd.read_json(str(data_folder/'nodes.json'))
 
@@ -45,14 +44,14 @@ node_gdf = gpd.GeoDataFrame(node_df, geometry=node_geometry, crs='EPSG:4326')
 # Buffer nodes with 50m buffer distance
 distance_meters = 50
 distance_degrees = distance_meters / 111139
-node_buffer = node_gdf.geometry.buffer(distance_degrees)
+kiosk_buffer = kiosk_gdf.geometry.buffer(distance_degrees)
 
 # Check if any kiosks intersect with node buffers
-kiosks_within_50m = kiosk_gdf[kiosk_gdf.geometry.intersects(node_buffer.unary_union)]
+nodes_within_50m = node_gdf[node_gdf.geometry.intersects(kiosk_buffer.unary_union)]
 
 # Print kiosks within 50m of a node
-print("Kiosks within 50m of a node:")
-print(kiosks_within_50m)
+print("Nodes within 50m of a kiosk:")
+print(nodes_within_50m)
 
 
 
@@ -87,8 +86,8 @@ fig.add_trace(go.Scattermapbox(
 # Add found kiosks within 50m of a node to the figure
 fig.add_trace(go.Scattermapbox(
     mode='markers',
-    lon=kiosks_within_50m['longitude'],
-    lat=kiosks_within_50m['latitude'],
+    lon=nodes_within_50m['longitude'],
+    lat=nodes_within_50m['latitude'],
     marker=dict(
         size=7,
         color='yellow',
