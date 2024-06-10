@@ -7,7 +7,7 @@ This project uses a [TP4000zc multimeter](https://www.amazon.com/gp/product/B000
 ## Setup
 
 - cd into `analysis/siklu_alignment`
-- start [Docker Desktop]([url](https://www.docker.com/products/docker-desktop/))
+- start [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 - `docker compose up -d --force-recreate --build`
 - in Grafana to setup the InfluxDB datasource use host url: `http://influxdb:8086`, database: `siklu`, password/username: `admin`
 - `pip install influxdb`
